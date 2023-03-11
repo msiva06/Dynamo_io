@@ -5,9 +5,11 @@ import {
   fetchDependencyAsync,
   selectDependency,
 } from "../features/dependencySlice";
+import { generateProjAsync } from "../features/generateProjSlice";
 
 const App = () => {
   const [projName, setProjName] = useState("");
+  const [projBtn, setProjBtn] = useState(false);
   const [src, setSrc] = useState(false);
   const [features, setFeatures] = useState(false);
   const [component, setComponent] = useState("");
@@ -34,8 +36,8 @@ const App = () => {
 
   const dispatch = useDispatch();
   const dependency = useSelector(selectDependency);
-  console.log("Dependency:", dependency.name);
-  console.log("DependencyList:", dependencyList);
+  //console.log("Dependency:", dependency.name);
+  //console.log("DependencyList:", dependencyList);
 
   const handleDependency = async (event) => {
     event.preventDefault();
@@ -106,7 +108,31 @@ const App = () => {
     return error;
   };
 
-  const generateDir = () => {};
+  const componentFiles = (comp) => {
+    const folderName = comp.toLowerCase();
+    const compFileName =
+      comp.charAt(0).toUpperCase() + comp.substring(1) + ".js";
+    const compSliceFileName = folderName + "Slice.js";
+    return {
+      folder: folderName,
+      files: [compFileName, compSliceFileName],
+    };
+  };
+
+  const generateDir = () => {
+    const features = componentList.map((component) =>
+      componentFiles(component)
+    );
+    const reqbody = {
+      projName,
+      features,
+      api: apiFileList,
+      models: modelsFileList,
+      dependencies: dependencyList,
+    };
+    console.log(reqbody);
+    dispatch(generateProjAsync(reqbody));
+  };
 
   return (
     <div>
@@ -123,10 +149,18 @@ const App = () => {
                   type="text"
                   className="mx-3"
                   placeholder="Project Name"
-                  onChange={(e) => setProjName(e.target.value)}
-                  value={projName}
+                  onChange={(e) => {
+                    setProjName(e.target.value);
+                    setProjBtn(false);
+                  }}
                 />
-                <Button className="mt-3 mb-3 mx-2">Add Project</Button>
+                <Button
+                  className="mt-3 mb-3 mx-2"
+                  onClick={() => setProjBtn(true)}
+                >
+                  Add Project
+                </Button>
+                {projBtn && projName ? <span>✅ {projName} added</span> : ""}
               </Form.Group>
             </Form>
           </Col>
@@ -246,7 +280,7 @@ const App = () => {
                           {successApiBadge &&
                             apiFileList?.map((api) => {
                               return (
-                                <div>
+                                <div key={api}>
                                   <Badge bg="success">{api}</Badge>
                                 </div>
                               );
