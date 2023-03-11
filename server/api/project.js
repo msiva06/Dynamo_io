@@ -74,7 +74,7 @@ router.post("/", async (req, res, next) => {
       );
       indexJsFile.pipe(indexClientFile);
 
-      const features = req.body.client.features;
+      const features = req.body.features;
 
       for (let feature of features) {
         const files = feature.files;
@@ -115,13 +115,13 @@ router.post("/", async (req, res, next) => {
       const serverDir = await mkdir(`${newDir}/server`, { recursive: true });
       const apiDir = await mkdir(`${serverDir}/api`, { recursive: true });
 
-      const apiArray = req.body.server.api;
+      const apiArray = req.body.api;
       for (let api of apiArray) {
         await writeFile(path.join(`${serverDir}`, "api", `${api}`), "");
       }
       const dbDir = await mkdir(`${serverDir}/db`, { recursive: true });
       const modelsDir = await mkdir(`${dbDir}/models`, { recursive: true });
-      const modelsArr = req.body.server.db.models;
+      const modelsArr = req.body.models;
       for (let model of modelsArr) {
         await writeFile(
           path.join(`${serverDir}`, "db", "models", `${model}`),
