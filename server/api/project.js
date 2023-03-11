@@ -199,13 +199,62 @@ router.post("/", async (req, res, next) => {
   }
 });
 
-router.get("/package/:pkgName", async (req, res, next) => {
+router.get("/", async (req, res, next) => {
   try {
-    const pkgName = req.params.pkgName;
-    const { data } = await axios.get(`https://registry.npmjs.org/${pkgName}`);
-    console.log(data);
+    const pkgName = req.query.pkgName;
+    const { data, status } = await axios.get(
+      `https://registry.npmjs.org/${pkgName}/latest`
+    );
     res.json(data);
+    //__________________________________________Promise portion___________________________
+    //let responses;
+    //const promises = [];
+    // for (let pkg of pkgList) {
+    //   try {
+    //     const promise = new Promise(async (res, rej) => {
+    //       const { data, status } = await axios.get(
+    //         `https://registry.npmjs.org/${pkg}/latest`
+    //       );
+    //       res(data, status);
+    //       // Promise.reject(new Error("Requested Package not found in npm")).then(
+    //       //   res,
+    //       //   rej
+    //       // );
+    //       rej(new Error("Requested Package not found in npm"));
+    //     });
+    //     promises.push(promise);
+    //   } catch (err) {
+    //     res.sendStatus(404).send("Requested Package not found in npm");
+    //     return;
+    //   }
+    // }
+
+    // try {
+    //   responses = await Promise.all(promises);
+    // } catch (err) {
+    //   res.sendStatus(404).send("Requested Package not found in npm");
+    //   return;
+    // }
+
+    // const { data, status } = await axios.get(
+    //   `https://registry.npmjs.org/${pkgName}`
+    // );
+    // if (status === "404") {
+    //   res.sendStatus(404).send("Requested package not found in npm");
+    //   return;
+    // } else {
+    // console.log(responses);
+    // res.json(responses);
+    //}
+    //__________________________________________Promise portion___________________________
   } catch (err) {
+    if (err.response.status === 404) {
+      const errorUrl = err.response.config.url.split("/");
+      res
+        .status(404)
+        .send(`Requested Package :${errorUrl[3]} not found in npm`);
+      return;
+    }
     next(err);
   }
 });
