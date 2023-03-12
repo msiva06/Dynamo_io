@@ -13,7 +13,7 @@ const admz = require("adm-zip");
 router.post("/", async (req, res, next) => {
   try {
     const proj = req.body;
-    console.log("Req:", proj);
+    //console.log("Req:", proj);
     const projName = req.body.projName;
     const root = process.env.PROJNAME;
 
@@ -54,7 +54,7 @@ router.post("/", async (req, res, next) => {
           recursive: true,
         });
 
-        console.log("AppDir:", appDir);
+        //console.log("AppDir:", appDir);
         const appClientFile = await fs.createReadStream(`public/sampleApp.js`, {
           encoding: "utf-8",
         });
@@ -157,15 +157,15 @@ router.post("/", async (req, res, next) => {
         fs.readFileSync(`public/buildZip/${projName}/package.json`, "utf-8")
       );
 
-      console.log("++++++++++++" + packgJson);
-      console.log("name::::::::" + packgJson.version + projName);
+      //console.log("++++++++++++" + packgJson);
+      //console.log("name::::::::" + packgJson.version + projName);
       packgJson.name = projName;
 
       const dependencies = req.body?.dependencies;
       if (dependencies !== undefined && dependencies.length > 0) {
         dependencies.forEach((dependency) => {
-          console.log(dependency.name);
-          console.log(dependency.version);
+          //console.log(dependency.name);
+          //console.log(dependency.version);
           const name = dependency.name;
           const version = dependency.version;
           packgJson.dependencies[name] = version;
@@ -178,45 +178,27 @@ router.post("/", async (req, res, next) => {
         JSON.stringify(packgJson, null, 4),
         function writeJSON(err) {
           if (err) return console.log(err);
-          console.log(JSON.stringify(file));
-          console.log("writing to " + fileName);
+          //console.log(JSON.stringify(file));
+          //console.log("writing to " + fileName);
         }
       );
     }
     const down_fileName = `${newDir}`;
-    console.log("DownfileName:", down_fileName);
+    //console.log("DownfileName:", down_fileName);
     const to_zip = fs.readdirSync(down_fileName);
-    console.log(to_zip);
+    //console.log(to_zip);
     const zip = new admz();
 
     zip.addLocalFolder("public/buildZip");
-    //const rootDir = "${root}";
-    // for (let i = 0; i < to_zip.length; i++) {
-    //   const file = down_fileName + "/" + to_zip[i];
-
-    //   const isDir = fs.lstatSync(file).isDirectory();
-    //   if (isDir) {
-    //     console.log("folder:::" + file);
-    //     zip.addLocalFolder(file);
-    //   } else {
-    //     console.log("file:::" + file);
-    //     zip.addLocalFile(file);
-    //   }
-    // }
-    //console.log("zip:::" + zip);
     const download_File = `${projName}.zip`;
     const data = zip.toBuffer();
-    console.log("DATA:", data);
+    //console.log("DATA:", data);
     res.set("Content-Type", "application/octet-stream");
     res.set("Content-Disposition", `attachment; filename=${download_File}`);
     res.set("Content-Length", data.length);
-    // fs.rmdir(`${newDir}`, (err) => {
-    //   if (err) throw err;
-    //   console.log("Directory removed");
-    // });
+
     fs.rmSync(`${newDir}`, { recursive: true, force: true });
     res.send(data);
-    //res.download(`${projName}.zip`);
   } catch (err) {
     fs.rmSync(`${newDir}`, { recursive: true, force: true });
     next(err);

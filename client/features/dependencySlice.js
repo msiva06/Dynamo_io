@@ -23,7 +23,7 @@ export const dependencySlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchDependencyAsync.fulfilled, (state, action) => {
-        console.log("Payload:", action.payload);
+        //console.log("Payload:", action.payload);
         return action.payload;
       })
       .addCase(fetchDependencyAsync.rejected, (state, action) => {

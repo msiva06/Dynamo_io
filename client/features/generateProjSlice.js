@@ -9,11 +9,11 @@ export const generateProjAsync = createAsyncThunk(
       const { data, status } = await axios.post("/api/project", reqbody, {
         responseType: "blob",
       });
-      console.log("Data and Status:", data, status);
+      //console.log("Data and Status:", data, status);
       //return data;
       fileDownload(data, "dynamo_generated.zip");
     } catch (err) {
-      console.log(err);
+      //console.log(err);
     }
   }
 );

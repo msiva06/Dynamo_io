@@ -64,14 +64,14 @@ const App = () => {
         );
       });
       promise.then((dependency) => {
-        console.log("Dependency in Promise:", dependency.payload?.name);
-        console.log(
-          "In handle dependancy",
-          dependency.payload?.name,
-          dependencyName
-        );
+        //console.log("Dependency in Promise:", dependency.payload?.name);
+        // console.log(
+        //   "In handle dependancy",
+        //   dependency.payload?.name,
+        //   dependencyName
+        // );
         if (dependency.payload?.name === dependencyName.trim().toLowerCase()) {
-          console.log("Positive cond in handle Dependency");
+          //console.log("Positive cond in handle Dependency");
           const dependencyObj = {
             name: dependency.payload.name,
             version: dependency.payload.version,
@@ -91,11 +91,11 @@ const App = () => {
 
   const dependencyValidate = () => {
     const error = {};
-    console.log(
-      "Dependencylist and dependency Name:",
-      dependencyList,
-      dependencyName
-    );
+    // console.log(
+    //   "Dependencylist and dependency Name:",
+    //   dependencyList,
+    //   dependencyName
+    // );
     if (!dependencyName) {
       error.message = "Dependency name can't be BLANK";
     }
@@ -106,7 +106,7 @@ const App = () => {
       error.message = "Dependency name already exists";
     }
     setDependencyErr(error);
-    console.log("error:", error);
+    //console.log("error:", error);
     return error;
   };
 
@@ -259,7 +259,7 @@ const App = () => {
       models: modelsFileList,
       dependencies: dependencyList,
     };
-    console.log(reqbody);
+    //console.log(reqbody);
     const error = projNameValidate(reqbody.projName);
     if (!error.hasOwnProperty("message")) {
       dispatch(generateProjAsync(reqbody));
@@ -307,7 +307,7 @@ const App = () => {
           setSelectAutoData("");
           setAutoCompleteData(packageNamesData);
         } catch (err) {
-          console.log(err);
+          //console.log(err);
         }
       } else {
         setSelectAutoData("");
