@@ -7,6 +7,7 @@ import {
   Button,
   Badge,
   Navbar,
+  ListGroup,
 } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -14,6 +15,7 @@ import {
   selectDependency,
 } from "../features/dependencySlice";
 import { generateProjAsync } from "../features/generateProjSlice";
+import axios from "axios";
 
 const App = () => {
   const [projName, setProjName] = useState("");
@@ -49,8 +51,8 @@ const App = () => {
 
   const dispatch = useDispatch();
   const dependency = useSelector(selectDependency);
-  //console.log("Dependency:", dependency.name);
-  //console.log("DependencyList:", dependencyList);
+  // console.log("Dependency:", dependency.name);
+  // console.log("DependencyList:", dependencyList);
 
   const handleDependency = async (event) => {
     event.preventDefault();
@@ -77,6 +79,7 @@ const App = () => {
 
           setDependencyList([...dependencyList, dependencyObj]);
           setDependencyName("");
+          setSelectAutoData("");
         } else if (dependency.error.name === "Error") {
           const error = {};
           error.message = dependency.error.message;
@@ -249,17 +252,6 @@ const App = () => {
   };
 
   const generateDir = () => {
-    // const features = componentList.map((component) =>
-    //   componentFiles(component)
-    // );
-    // const api = apiFileList.map((apiFile) => {
-    //   apiFiles(apiFile);
-    // });
-
-    // const models = modelsFileList.map((modelsFile) => {
-    //   modelsFiles(modelsFile);
-    // });
-
     const reqbody = {
       projName,
       features: componentList,
@@ -298,26 +290,64 @@ const App = () => {
     setDependencyList(updatedDependency);
   };
 
+  const [autoCompleteData, setAutoCompleteData] = useState([]);
+  const [selectAutoData, setSelectAutoData] = useState("");
+
+  useEffect(() => {
+    const autoComplete = async () => {
+      if (dependencyName !== selectAutoData) {
+        try {
+          const { data } = await axios.get(
+            `https://registry.npmjs.com/-/v1/search?text=<${dependencyName}>&size=20`
+          );
+          const packageNamesData = data.objects.map(
+            (object) => object.package.name
+          );
+          //console.log("PkgNamesData:", packageNamesData);
+          setSelectAutoData("");
+          setAutoCompleteData(packageNamesData);
+        } catch (err) {
+          console.log(err);
+        }
+      } else {
+        setSelectAutoData("");
+        setAutoCompleteData([]);
+      }
+    };
+    autoComplete();
+  }, [dependencyName]);
+
   return (
     <div style={{ backgroundColor: "	#FFFFF0" }}>
       <Navbar bg="dark">
-        <Container>
-          <Navbar.Brand href="#home">
-            <img
-              src="/DynamoIO-logos_white.png"
-              width="100"
-              height="100"
-              className="d-inline-block align-top"
-              alt="DynamoIO logo"
-            />
-          </Navbar.Brand>
-        </Container>
-        <Container>
-          <Navbar.Brand className="" style={{ color: "white" }} href="#">
-            Dynamo.IO
-          </Navbar.Brand>
-        </Container>
+        <Row>
+          <Col xs={2}>
+            <Container>
+              <Navbar.Brand href="#home">
+                <img
+                  src="/DynamoIO-logos_white.png"
+                  width="100"
+                  height="100"
+                  className="d-inline-block align-top"
+                  alt="DynamoIO logo"
+                />
+              </Navbar.Brand>
+            </Container>
+          </Col>
+          <Col xs={10} className="my-2">
+            <Navbar.Brand
+              style={{ color: "white" }}
+              className="float-end"
+              href="#home"
+            >
+              <img src="/text-1678637716203.png" alt="Dynamo.IO" />
+            </Navbar.Brand>
+          </Col>
+        </Row>
       </Navbar>
+      <h2 className="text text-center my-3">
+        Boiler-plate code generator for node/npm projects.
+      </h2>
       <Container className="mt-5">
         <Row style={{ backgroundColor: "gray" }}>
           <Col className="border">
@@ -331,7 +361,7 @@ const App = () => {
                 <Form.Control
                   type="text"
                   className="mx-3"
-                  style={{ maxWidth: "30rem" }}
+                  style={{ maxWidth: "20rem" }}
                   placeholder="Project Name"
                   onChange={(e) => {
                     setProjName(e.target.value);
@@ -407,6 +437,7 @@ const App = () => {
                                           <Button
                                             type="button"
                                             aria-label="Close"
+                                            style={{ border: "none" }}
                                             onClick={() =>
                                               handleDeleteComp(component.folder)
                                             }
@@ -454,7 +485,7 @@ const App = () => {
                       className="mx-3"
                       type="text"
                       placeholder="Enter Component"
-                      style={{ maxWidth: "30rem" }}
+                      style={{ maxWidth: "20rem" }}
                       onChange={(e) => {
                         setComponent(e.target.value);
                         setComponentErr("");
@@ -534,6 +565,7 @@ const App = () => {
                                     <Button
                                       type="button"
                                       aria-label="Close"
+                                      style={{ border: "none" }}
                                       onClick={() => handleDeleteApi(api)}
                                       className="bg-danger close mx-3"
                                     >
@@ -587,6 +619,7 @@ const App = () => {
                                           <Button
                                             type="button"
                                             aria-label="Close"
+                                            style={{ border: "none" }}
                                             onClick={() =>
                                               handleDeleteModel(models)
                                             }
@@ -633,7 +666,7 @@ const App = () => {
                     <Form.Control
                       type="text"
                       className="mx-3"
-                      style={{ maxWidth: "30rem" }}
+                      style={{ maxWidth: "20rem" }}
                       placeholder="Enter API"
                       onChange={(e) => {
                         setApiFile(e.target.value);
@@ -689,7 +722,7 @@ const App = () => {
                     <Form.Control
                       className="mx-3"
                       type="text"
-                      style={{ maxWidth: "30rem" }}
+                      style={{ maxWidth: "20rem" }}
                       placeholder="Enter Model"
                       onChange={(e) => {
                         setModelsFile(e.target.value);
@@ -740,7 +773,7 @@ const App = () => {
             <Form>
               <Form.Group
                 className="mt-3 mb-3 border"
-                controlId="formBasicProjName"
+                //controlId="formBasicDependName"
                 style={{
                   minHeight: "18rem",
                   color: "white",
@@ -751,14 +784,38 @@ const App = () => {
                 <Form.Control
                   className="mx-3"
                   type="text"
+                  id="dependName"
                   placeholder="Add Dependency"
-                  style={{ maxWidth: "30rem" }}
+                  style={{ maxWidth: "20rem" }}
                   value={dependencyName}
                   onChange={(e) => {
                     setDependencyName(e.target.value);
                     setDependencyErr("");
                   }}
                 />
+                {autoCompleteData.length != 0 &&
+                  autoCompleteData.map((data) => {
+                    return (
+                      !selectAutoData && (
+                        <ListGroup
+                          className="mx-3"
+                          style={{ maxWidth: "20rem" }}
+                          key={data}
+                        >
+                          <ListGroup.Item
+                            action
+                            onClick={() => {
+                              setDependencyName(data);
+                              setSelectAutoData(data);
+                              setAutoCompleteData([]);
+                            }}
+                          >
+                            {data}
+                          </ListGroup.Item>
+                        </ListGroup>
+                      )
+                    );
+                  })}
                 {dependancyErr && (
                   <p className="text text-danger mx-3">
                     {dependancyErr.message}
@@ -789,6 +846,7 @@ const App = () => {
                       </Badge>
                       <Button
                         type="button"
+                        style={{ border: "none" }}
                         aria-label="Close"
                         onClick={() => handleDeleteDependency(dependency.name)}
                         className="bg-danger close mx-3"
@@ -802,14 +860,64 @@ const App = () => {
           </Col>
         </Row>
         <Row style={{ backgroundColor: "gray" }}>
-          <Container className="mt-3 mb-3">
-            <Col
-              className="border"
-              style={{ minHeight: "20rem", backgroundColor: "white" }}
-            >
-              <h3 className="mx-3 my-3">Instructions to follow:</h3>
-            </Col>
-          </Container>
+          <Col
+            className="border"
+            style={{ minHeight: "20rem", backgroundColor: "white" }}
+          >
+            <h3 className="mx-3 my-3">Notes:</h3>
+            <p className="text text-info mx-3">Component:</p>
+            <li className="mx-3">
+              Component's folder name should be in lowercase letters.
+            </li>
+            <li className="mx-3">
+              Component's file name should start with Uppercase letter.
+            </li>
+            <li className="mx-3">
+              Component's slice name should be in camelCase format appended with
+              "Slice" at the end.
+            </li>
+            <p className="text text-info mx-3 my-3">API:</p>
+            <li className="mx-3">
+              API's file name should start with Uppercase letter.
+            </li>
+            <li className="mx-3">
+              Multi-word API's name should be in respective UpperCase format
+              appended with "API" at the end.
+            </li>
+            <p className="text text-info mx-3 my-3">Models:</p>
+            <li className="mx-3">
+              Models's file name should start with Uppercase letter.
+            </li>
+            <li className="mx-3">
+              Multi-word Model's name should be in respective UpperCase format.
+            </li>
+            <p className="text text-info mx-3 my-3">Dependencies:</p>
+            <li className="mx-3">
+              Dependencies are added to the package.json file.
+            </li>
+            <p className="text text-info mx-3 my-3">
+              Additional files Provided:
+            </p>
+            <li className="mx-3">client/index.js</li>
+            <li className="mx-3">public/index.html</li>
+            <li className="mx-3">public/style.css</li>
+            <li className="mx-3">server/index.js</li>
+            <li className="mx-3">server/app.js</li>
+            <li className="mx-3">client/index.js</li>
+            <li className="mx-3">README.md</li>
+            <li className="mx-3 mb-3">webpack.config.js</li>
+          </Col>
+          <Col
+            className="border"
+            style={{ minHeight: "20rem", backgroundColor: "white" }}
+          >
+            <h3 className="mx-3 my-3">Sample Project Structure:</h3>
+            <img
+              className="my-3"
+              src="/Projstructure.png"
+              alt="project structure"
+            />
+          </Col>
         </Row>
         <Row>
           <Button
