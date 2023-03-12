@@ -270,7 +270,7 @@ const App = () => {
     console.log(reqbody);
     const error = projNameValidate(reqbody.projName);
     if (!error.hasOwnProperty("message")) {
-      //dispatch(generateProjAsync(reqbody));
+      dispatch(generateProjAsync(reqbody));
     }
   };
 
@@ -301,6 +301,17 @@ const App = () => {
   return (
     <div style={{ backgroundColor: "	#FFFFF0" }}>
       <Navbar bg="dark">
+        <Container>
+          <Navbar.Brand href="#home">
+            <img
+              src="/DynamoIO-logos_white.png"
+              width="100"
+              height="100"
+              className="d-inline-block align-top"
+              alt="DynamoIO logo"
+            />
+          </Navbar.Brand>
+        </Container>
         <Container>
           <Navbar.Brand className="" style={{ color: "white" }} href="#">
             Dynamo.IO
