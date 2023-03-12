@@ -42,50 +42,55 @@ router.post("/", async (req, res, next) => {
     const readMeFile = await writeFile(path.join(`${newDir}`, "README.md"), "");
     if (newDir) {
       //----------------------------------------------------------------------------//
-      const clientDir = await mkdir(`${newDir}/client`, { recursive: true });
-      const featuresDir = await mkdir(`${clientDir}/features`, {
-        recursive: true,
-      });
 
-      const appDir = await mkdir(`${featuresDir}/app`, {
-        recursive: true,
-      });
+      const isClientPresent = req.body?.features;
+      if (isClientPresent !== undefined && isClientPresent.length > 0) {
+        const clientDir = await mkdir(`${newDir}/client`, { recursive: true });
+        const featuresDir = await mkdir(`${clientDir}/features`, {
+          recursive: true,
+        });
 
-      console.log("AppDir:", appDir);
-      const appClientFile = await fs.createReadStream(`public/sampleApp.js`, {
-        encoding: "utf-8",
-      });
+        const appDir = await mkdir(`${featuresDir}/app`, {
+          recursive: true,
+        });
 
-      // const appFile = await writeFile(path.join(`${appDir}`, "App.js"), "");
-      const appFile = await fs.createWriteStream(
-        path.join(`${appDir}`, "App.js")
-      );
-      appClientFile.pipe(appFile);
+        console.log("AppDir:", appDir);
+        const appClientFile = await fs.createReadStream(`public/sampleApp.js`, {
+          encoding: "utf-8",
+        });
 
-      const indexJsFile = await fs.createReadStream(`public/sampleIndex.js`, {
-        encoding: "utf-8",
-      });
-      // const indexClientFile = await writeFile(
-      //   path.join(`${clientDir}`, "index.js"),
-      //   ""
-      // );
-      const indexClientFile = await fs.createWriteStream(
-        path.join(`${clientDir}`, "index.js")
-      );
-      indexJsFile.pipe(indexClientFile);
+        // const appFile = await writeFile(path.join(`${appDir}`, "App.js"), "");
+        const appFile = await fs.createWriteStream(
+          path.join(`${appDir}`, "App.js")
+        );
+        appClientFile.pipe(appFile);
 
-      const features = req.body.features;
+        const indexJsFile = await fs.createReadStream(`public/sampleIndex.js`, {
+          encoding: "utf-8",
+        });
+        // const indexClientFile = await writeFile(
+        //   path.join(`${clientDir}`, "index.js"),
+        //   ""
+        // );
+        const indexClientFile = await fs.createWriteStream(
+          path.join(`${clientDir}`, "index.js")
+        );
+        indexJsFile.pipe(indexClientFile);
 
-      for (let feature of features) {
-        const files = feature.files;
-        await mkdir(`${featuresDir}/${feature.folder}`, { recursive: true });
-        for (let file of files) {
-          await writeFile(
-            path.join(`${featuresDir}`, `${feature.folder}`, `${file}`),
-            ""
-          );
+        const features = req.body?.features;
+
+        for (let feature of features) {
+          const files = feature.files;
+          await mkdir(`${featuresDir}/${feature.folder}`, { recursive: true });
+          for (let file of files) {
+            await writeFile(
+              path.join(`${featuresDir}`, `${feature.folder}`, `${file}`),
+              ""
+            );
+          }
         }
       }
+
       //----------------------------------------------------------------------------//
       const publicDir = await mkdir(`${newDir}/public`, { recursive: true });
       const indexPublicHtml = await fs.createReadStream(
@@ -94,11 +99,6 @@ router.post("/", async (req, res, next) => {
           encoding: "utf-8",
         }
       );
-
-      // const indexPublicFile = await writeFile(
-      //   path.join(`${publicDir}`, "index.html"),
-      //   ""
-      // );
 
       const indexPublicFile = await fs.createWriteStream(
         path.join(`${publicDir}`, "index.html")
@@ -112,30 +112,45 @@ router.post("/", async (req, res, next) => {
       );
 
       //----------------------------------------------------------------------------//
-      const serverDir = await mkdir(`${newDir}/server`, { recursive: true });
-      const apiDir = await mkdir(`${serverDir}/api`, { recursive: true });
+      const api = req.body?.api;
+      const models = req.body?.models;
+      if (
+        (api !== undefined || models !== undefined) &&
+        (api.length > 0 || models.length > 0)
+      ) {
+        const serverDir = await mkdir(`${newDir}/server`, { recursive: true });
+        if (api !== undefined && api.length > 0) {
+          const apiDir = await mkdir(`${serverDir}/api`, { recursive: true });
 
-      const apiArray = req.body.api;
-      for (let api of apiArray) {
-        await writeFile(path.join(`${serverDir}`, "api", `${api}`), "");
-      }
-      const dbDir = await mkdir(`${serverDir}/db`, { recursive: true });
-      const modelsDir = await mkdir(`${dbDir}/models`, { recursive: true });
-      const modelsArr = req.body.models;
-      for (let model of modelsArr) {
-        await writeFile(
-          path.join(`${serverDir}`, "db", "models", `${model}`),
+          const apiArray = req.body?.api;
+          if (apiArray.length > 0) {
+            for (let api of apiArray) {
+              await writeFile(path.join(`${serverDir}`, "api", `${api}`), "");
+            }
+          }
+        }
+        if (models !== undefined && models.length > 0) {
+          const dbDir = await mkdir(`${serverDir}/db`, { recursive: true });
+          const modelsDir = await mkdir(`${dbDir}/models`, { recursive: true });
+          const modelsArr = req.body?.models;
+          if (modelsArr.length > 0) {
+            for (let model of modelsArr) {
+              await writeFile(
+                path.join(`${serverDir}`, "db", "models", `${model}`),
+                ""
+              );
+            }
+          }
+        }
+        const appServFile = await writeFile(
+          path.join(`${serverDir}`, "app.js"),
+          ""
+        );
+        const indexServFile = await writeFile(
+          path.join(`${serverDir}`, "index.js"),
           ""
         );
       }
-      const appServFile = await writeFile(
-        path.join(`${serverDir}`, "app.js"),
-        ""
-      );
-      const indexServFile = await writeFile(
-        path.join(`${serverDir}`, "index.js"),
-        ""
-      );
 
       //----------------------------------------------------------------------------//
       const packgJson = JSON.parse(
@@ -146,14 +161,16 @@ router.post("/", async (req, res, next) => {
       console.log("name::::::::" + packgJson.version + projName);
       packgJson.name = projName;
 
-      const dependencies = req.body.dependencies;
-      dependencies.forEach((dependency) => {
-        console.log(dependency.name);
-        console.log(dependency.version);
-        const name = dependency.name;
-        const version = dependency.version;
-        packgJson.dependencies[name] = version;
-      });
+      const dependencies = req.body?.dependencies;
+      if (dependencies !== undefined && dependencies.length > 0) {
+        dependencies.forEach((dependency) => {
+          console.log(dependency.name);
+          console.log(dependency.version);
+          const name = dependency.name;
+          const version = dependency.version;
+          packgJson.dependencies[name] = version;
+        });
+      }
 
       //----------------------------------------------------------------------------//
       fs.writeFileSync(
@@ -193,8 +210,15 @@ router.post("/", async (req, res, next) => {
     res.set("Content-Type", "application/octet-stream");
     res.set("Content-Disposition", `attachment; filename=${download_File}`);
     res.set("Content-Length", data.length);
+    // fs.rmdir(`${newDir}`, (err) => {
+    //   if (err) throw err;
+    //   console.log("Directory removed");
+    // });
+    fs.rmSync(`${newDir}`, { recursive: true, force: true });
     res.send(data);
+    //res.download(`${projName}.zip`);
   } catch (err) {
+    fs.rmSync(`${newDir}`, { recursive: true, force: true });
     next(err);
   }
 });
