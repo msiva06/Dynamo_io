@@ -1,13 +1,17 @@
 import axios from "axios";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import fileDownload from "js-file-download";
 
 export const generateProjAsync = createAsyncThunk(
   "generateProj",
   async (reqbody) => {
     try {
-      const { data, status } = await axios.post("/api/project", reqbody);
+      const { data, status } = await axios.post("/api/project", reqbody, {
+        responseType: "blob",
+      });
       console.log("Data and Status:", data, status);
-      return data;
+      //return data;
+      fileDownload(data, "dynamo_generated.zip");
     } catch (err) {
       console.log(err);
     }
