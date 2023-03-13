@@ -17,7 +17,11 @@ router.post("/", async (req, res, next) => {
     const projName = req.body.projName;
     const root = process.env.PROJNAME;
 
-    const newDir = await mkdir(`public/buildZip/${projName}`, {
+    const buildZipDir = await mkdir(`public/buildZip`, {
+      recursive: true,
+    });
+
+    const newDir = await mkdir(`${buildZipDir}/${projName}`, {
       recursive: true,
     });
 
@@ -197,10 +201,10 @@ router.post("/", async (req, res, next) => {
     res.set("Content-Disposition", `attachment; filename=${download_File}`);
     res.set("Content-Length", data.length);
 
-    fs.rmSync(`${newDir}`, { recursive: true, force: true });
+    fs.rmSync(`${buildZipDir}`, { recursive: true, force: true });
     res.send(data);
   } catch (err) {
-    fs.rmSync(`${newDir}`, { recursive: true, force: true });
+    fs.rmSync(`${buildZipDir}`, { recursive: true, force: true });
     next(err);
   }
 });
